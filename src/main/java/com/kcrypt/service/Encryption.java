@@ -21,18 +21,25 @@ import javax.crypto.spec.SecretKeySpec;
 public class Encryption {
 	private static byte[] salt;
 
-	public static String hash(String plainPassword) throws NoSuchAlgorithmException {
+	public Encryption() {
+		// generate random salt bytes
+		SecureRandom rand = new SecureRandom();
+		salt = new byte[16];
+		rand.nextBytes(salt);
+	}
+
+	public String hash(String plainPassword) throws NoSuchAlgorithmException {
 		// hash password
 
 		// hashing algorithm
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
 
-		if (salt == null || salt.length == 0) {
-			// generate random salt bytes
-			SecureRandom rand = new SecureRandom();
-			salt = new byte[16];
-			rand.nextBytes(salt);
-		}
+		// if (salt == null || salt.length == 0) {
+		// // generate random salt bytes
+		// SecureRandom rand = new SecureRandom();
+		// salt = new byte[16];
+		// rand.nextBytes(salt);
+		// }
 
 		// add salt to digest
 		digest.update(salt);
@@ -44,7 +51,7 @@ public class Encryption {
 		return toHexString(hash);
 	}
 
-	public static boolean comparePasswords(String plaintextPassword, String hashedPassword) {
+	public boolean comparePasswords(String plaintextPassword, String hashedPassword) {
 		try {
 			// Hash the plaintext password
 			String hashedInputPassword = hash(plaintextPassword);
@@ -58,9 +65,11 @@ public class Encryption {
 		}
 	}
 
-	public static String encrypt(String hash, String plainText)
+	public String encrypt(String hash, String plainText)
 			throws BadPaddingException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
+		System.out.printf("\n\n\n\n %s \n\n %s \n\n\n\n", salt.toString(), hash);
+
 		SecretKey secretKey = generaSecretKey(hash);
 
 		Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
@@ -71,7 +80,7 @@ public class Encryption {
 		return Base64.getEncoder().encodeToString(b);
 	}
 
-	public static String decrypt(String hash, String encryptedText)
+	public String decrypt(String hash, String encryptedText)
 			throws BadPaddingException, IllegalBlockSizeException, NoSuchPaddingException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InvalidKeyException {
 		SecretKey secretKey = generaSecretKey(hash);
@@ -81,7 +90,7 @@ public class Encryption {
 		return new String(b);
 	}
 
-	public static String toHexString(byte[] bytes) {
+	public String toHexString(byte[] bytes) {
 		// convert byte[] to hex String
 		StringBuilder hexString = new StringBuilder();
 		for (byte b : bytes) {
@@ -95,7 +104,7 @@ public class Encryption {
 		return hexString.toString();
 	}
 
-	private static SecretKey generaSecretKey(String hash) throws NoSuchAlgorithmException, InvalidKeySpecException {
+	private SecretKey generaSecretKey(String hash) throws NoSuchAlgorithmException, InvalidKeySpecException {
 
 		// encryption algorithm
 		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");

@@ -8,13 +8,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class EncryptionTest {
 
+	public static Encryption encryption = new Encryption();
+
 	@Test
 	void testHashMatch() {
 		try {
 			String password = "1234";
-			String hash = Encryption.hash(password);
+			String hash = encryption.hash(password);
 
-			boolean isValid = Encryption.comparePasswords(password, hash);
+			boolean isValid = encryption.comparePasswords(password, hash);
 
 			assertTrue(isValid);
 
@@ -29,9 +31,9 @@ public class EncryptionTest {
 		try {
 			String password = "1234";
 			String invalidPassword = "12345";
-			String hash = Encryption.hash(password);
+			String hash = encryption.hash(password);
 
-			boolean isValid = Encryption.comparePasswords(invalidPassword, hash);
+			boolean isValid = encryption.comparePasswords(invalidPassword, hash);
 
 			assertFalse(isValid);
 
@@ -47,10 +49,10 @@ public class EncryptionTest {
 		String password = "12345";
 
 		try {
-			String hash = Encryption.hash(password);
-			String hiddenText = Encryption.encrypt(hash, plainText);
+			String hash = encryption.hash(password);
+			String hiddenText = encryption.encrypt(hash, plainText);
 
-			assertEquals(plainText, Encryption.decrypt(hash, hiddenText));
+			assertEquals(plainText, encryption.decrypt(hash, hiddenText));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -65,10 +67,10 @@ public class EncryptionTest {
 		String password = "12345";
 
 		try {
-			String hash = Encryption.hash(password);
-			String hiddenText = Encryption.encrypt(hash, plainText);
+			String hash = encryption.hash(password);
+			String hiddenText = encryption.encrypt(hash, plainText);
 
-			assertNotEquals(plainTextInvalid, Encryption.decrypt(hash, hiddenText));
+			assertNotEquals(plainTextInvalid, encryption.decrypt(hash, hiddenText));
 
 		} catch (Exception e) {
 			e.printStackTrace();
