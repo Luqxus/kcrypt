@@ -1,23 +1,38 @@
 package com.kcrypt.service;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.util.Base64;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class Encryption {
-	public static String hashPassword(String plainPassword) throws NoSuchAlgorithmException {
+	private static byte[] salt;
+
+	public static String hash(String plainPassword) throws NoSuchAlgorithmException {
 		// hash password
 
 		// hashing algorithm
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
 
-		// generate random salt bytes
-		SecureRandom rand = new SecureRandom();
-		byte[] salt = new byte[16];
-		rand.nextBytes(salt);
+		if (salt == null || salt.length == 0) {
+			// generate random salt bytes
+			SecureRandom rand = new SecureRandom();
+			salt = new byte[16];
+			rand.nextBytes(salt);
+		}
 
 		// add salt to digest
 		digest.update(salt);
@@ -27,6 +42,43 @@ public class Encryption {
 
 		// convert hash bytes to hex string and return
 		return toHexString(hash);
+	}
+
+	public static boolean comparePasswords(String plaintextPassword, String hashedPassword) {
+		try {
+			// Hash the plaintext password
+			String hashedInputPassword = hash(plaintextPassword);
+
+			// Compare the hashed plaintext password with the stored hashed password
+			return hashedInputPassword.equals(hashedPassword);
+		} catch (NoSuchAlgorithmException e) {
+			// Handle hashing algorithm not found exception
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public static String encrypt(String hash, String plainText)
+			throws BadPaddingException, IllegalBlockSizeException, NoSuchPaddingException, InvalidKeyException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
+		SecretKey secretKey = generaSecretKey(hash);
+
+		Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+		cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+
+		byte[] b = cipher.doFinal(plainText.getBytes());
+
+		return Base64.getEncoder().encodeToString(b);
+	}
+
+	public static String decrypt(String hash, String encryptedText)
+			throws BadPaddingException, IllegalBlockSizeException, NoSuchPaddingException, NoSuchAlgorithmException,
+			InvalidKeySpecException, InvalidKeyException {
+		SecretKey secretKey = generaSecretKey(hash);
+		Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+		cipher.init(Cipher.DECRYPT_MODE, secretKey);
+		byte[] b = cipher.doFinal(Base64.getDecoder().decode(encryptedText));
+		return new String(b);
 	}
 
 	public static String toHexString(byte[] bytes) {
@@ -41,5 +93,17 @@ public class Encryption {
 		}
 
 		return hexString.toString();
+	}
+
+	private static SecretKey generaSecretKey(String hash) throws NoSuchAlgorithmException, InvalidKeySpecException {
+
+		// encryption algorithm
+		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+		KeySpec spec = new PBEKeySpec(hash.toCharArray(), hash.getBytes(), 10000, 128);
+
+		SecretKey key = factory.generateSecret(spec);
+
+		return new SecretKeySpec(key.getEncoded(), "AES");
+
 	}
 }
