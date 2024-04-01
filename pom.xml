@@ -26,6 +26,13 @@
             <version>2.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- mongodb -->
+        <dependency>  
+        <groupId>org.mongodb</groupId>  
+        <artifactId>mongodb-driver</artifactId>  
+        <version>3.4.2</version>  
+        </dependency>  
+        <!-- end mongodb -->
     </dependencies>
 
 </project>
