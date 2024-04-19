@@ -1,5 +1,8 @@
 package com.kcrypt;
 
+import static spark.Spark.*;
+
+
 import java.util.Map;
 import java.util.Set;
 

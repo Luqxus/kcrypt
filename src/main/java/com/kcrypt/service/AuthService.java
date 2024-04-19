@@ -3,7 +3,7 @@ package com.kcrypt.service;
 import java.lang.InternalError;
 import com.kcrypt.db.ArrayListAuthStorage;
 import com.kcrypt.db.IAuthStorage;
-import com.kcrypt.models.User;;
+import com.kcrypt.models.User;
 
 public class AuthService {
 
